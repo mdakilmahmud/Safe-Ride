@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///saferide.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///saferide.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
