@@ -6,12 +6,14 @@ from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime
+import resend
 import random
 import string
 import qrcode
 import os
 import smtplib
 from email.mime.text import MIMEText
+# smtplib kept as fallback, primary sending now via Resend API
 from email_validator import validate_email, EmailNotValidError
 from dotenv import load_dotenv
 
@@ -21,6 +23,8 @@ GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS')
 GMAIL_APP_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+resend.api_key = RESEND_API_KEY
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///saferide.db')
@@ -134,34 +138,25 @@ def generate_otp():
     hashed = bcrypt.generate_password_hash(plain).decode('utf-8')
     return plain, hashed
 
-def _send_email_task(to_email, subject, body):
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = GMAIL_ADDRESS
-    msg['To'] = to_email
-    try:
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_ADDRESS, to_email, msg.as_string())
-    except Exception as e:
-        print(f'Email send failed: {e}')
-
 def send_otp_email(to_email, otp_code, first_name):
     import threading
-    subject = 'Your SafeRide Verification Code'
-    body = f"""Hi {first_name},
+    def _send():
+        try:
+            resend.Emails.send({
+                "from": "SafeRide <onboarding@resend.dev>",
+                "to": to_email,
+                "subject": "Your SafeRide Verification Code",
+                "text": f"""Hi {first_name},
 
 Your SafeRide verification code is: {otp_code}
 
 This code expires in 10 minutes. If you didn't request this, you can ignore this email.
 
-— SafeRide Team
-"""
-    thread = threading.Thread(
-        target=_send_email_task,
-        args=(to_email, subject, body)
-    )
+— SafeRide Team"""
+            })
+        except Exception as e:
+            print(f'Email send failed: {e}')
+    thread = threading.Thread(target=_send)
     thread.daemon = True
     thread.start()
     return True
