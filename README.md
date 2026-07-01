@@ -115,24 +115,43 @@ http://127.0.0.1:5000
 ## 📁 Project Structure
 Safe-Ride/
 ├── app.py                  # Main Flask application — all routes, models, logic
+
 ├── requirements.txt        # Python dependencies
+
 ├── .gitignore              # Excludes venv, .env, database, uploads
+
 ├── README.md
+
 └── templates/
+
 ├── base.html           # Shared layout, navbar, theme toggle
+
 ├── home.html           # Landing page with hit counter
+
 ├── about.html          # About the project
+
 ├── signup.html         # User registration
+
 ├── login.html          # Login with email or phone
+
 ├── verify_otp.html     # OTP verification
+
 ├── choose_role.html    # Rider / Passenger selection
+
 ├── register_rider.html # Bike registration + plate format
+
 ├── register_passenger.html  # Map-based address picker
+
 ├── dashboard.html      # Role-based user dashboard
+
 ├── trip.html           # Trip logging with map + QR scanner
+
 ├── trip_success.html   # Trip confirmation
+
 ├── history.html        # All trip records
+
 └── changelog.html      # Platform version history
+
 
 ---
 
