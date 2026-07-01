@@ -38,6 +38,11 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"]
 )
 
+@app.errorhandler(429)
+def rate_limit_error(e):
+    flash('You are trying too many times. Please wait a few minutes and try again.', 'error')
+    return redirect(request.referrer or url_for('home'))
+
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -235,7 +240,7 @@ def changelog():
 # ── Signup ──
 
 @app.route('/signup', methods=['GET', 'POST'])
-@limiter.limit("5 per hour")
+@limiter.limit("200 per hour")
 def signup():
     if request.method == 'POST':
         email = request.form['email'].strip()
@@ -298,7 +303,7 @@ def signup():
 # ── OTP Verification ──
 
 @app.route('/verify-otp', methods=['GET', 'POST'])
-@limiter.limit("10 per hour")
+@limiter.limit("200 per hour")
 def verify_otp():
     user_id = session.get('pending_user_id')
     if not user_id:
@@ -333,7 +338,7 @@ def verify_otp():
     return render_template('verify_otp.html', user=user, otp_method=otp_method)
 
 @app.route('/resend-otp')
-@limiter.limit("3 per hour")
+@limiter.limit("100 per hour")
 def resend_otp():
     user_id = session.get('pending_user_id')
     if not user_id:
@@ -354,7 +359,7 @@ def resend_otp():
 # ── Login ──
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("10 per hour")
+@limiter.limit("300 per hour")
 def login():
     if request.method == 'POST':
         identifier = request.form['identifier'].strip()
