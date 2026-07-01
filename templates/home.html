@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.7s ease forwards; }
+.animate-fade-up-delay-1 { animation: fadeUp 0.7s ease 0.2s forwards; opacity: 0; }
+.animate-fade-up-delay-2 { animation: fadeUp 0.7s ease 0.4s forwards; opacity: 0; }
+.animate-fade-up-delay-3 { animation: fadeUp 0.7s ease 0.6s forwards; opacity: 0; }
+.animate-fade-up-delay-4 { animation: fadeUp 0.7s ease 0.8s forwards; opacity: 0; }
+.card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+.btn-glow:hover { box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); }
+.gradient-text {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-bg {
+    background: radial-gradient(ellipse at top left, #eff6ff 0%, #f0f9ff 40%, #f9fafb 100%);
+}
+.stat-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+}
+</style>
+
+<!-- Hero Section -->
+<div class="hero-bg pt-10 pb-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+
+        <div class="animate-fade-up inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
+            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            Now available in Bangladesh
+        </div>
+
+        <h1 class="animate-fade-up-delay-1 text-5xl sm:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+            Ride Safe.<br/>
+            <span class="gradient-text">Stay Verified.</span>
+        </h1>
+
+        <p class="animate-fade-up-delay-2 text-lg text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+            SafeRide adds a digital safety layer to informal motorcycle rides in Bangladesh.
+            Verify your rider, log every trip, and stay protected — without changing how you travel.
+        </p>
+
+        <div class="animate-fade-up-delay-3 flex flex-col sm:flex-row gap-3 justify-center mb-16">
+            {% if current_user.is_authenticated %}
+                <a href="/dashboard" class="btn-glow bg-blue-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition text-sm">
+                    Go to Dashboard →
+                </a>
+                <a href="/trip" class="bg-white text-gray-700 border border-gray-200 px-8 py-3.5 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
+                    Log a Trip
+                </a>
+            {% else %}
+                <a href="/signup" class="btn-glow bg-blue-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition text-sm">
+                    Get Started — It's Free →
+                </a>
+                <a href="/login" class="bg-white text-gray-700 border border-gray-200 px-8 py-3.5 rounded-xl font-semibold hover:bg-gray-50 transition text-sm">
+                    Log In
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="animate-fade-up-delay-4 grid grid-cols-3 gap-4 max-w-lg mx-auto">
+            <div class="stat-card">
+                <p class="text-2xl font-bold text-blue-600">100%</p>
+                <p class="text-xs text-gray-400 mt-1">Verified Riders</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-2xl font-bold text-blue-600">0৳</p>
+                <p class="text-xs text-gray-400 mt-1">Cost to Register</p>
+            </div>
+            <div class="stat-card">
+                <p class="text-2xl font-bold text-blue-600">24/7</p>
+                <p class="text-xs text-gray-400 mt-1">Trip Records</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="bg-white py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-14">
+            <p class="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-2">How It Works</p>
+            <h2 class="text-3xl font-bold text-gray-900">Three steps to a safer ride</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            <div class="card-hover text-center p-6">
+                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">🏍️</div>
+                <div class="text-blue-600 text-xs font-bold uppercase tracking-widest mb-2">Step 1</div>
+                <h3 class="font-bold text-gray-800 mb-2">Rider Registers</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Riders sign up with their bike details and get a unique verified code and QR.</p>
+            </div>
+            <div class="card-hover text-center p-6">
+                <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">🔍</div>
+                <div class="text-green-600 text-xs font-bold uppercase tracking-widest mb-2">Step 2</div>
+                <h3 class="font-bold text-gray-800 mb-2">Passenger Verifies</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Before the ride, the passenger scans the QR or enters the rider code to verify identity.</p>
+            </div>
+            <div class="card-hover text-center p-6">
+                <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">📋</div>
+                <div class="text-purple-600 text-xs font-bold uppercase tracking-widest mb-2">Step 3</div>
+                <h3 class="font-bold text-gray-800 mb-2">Trip is Logged</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">A trip record with destination, fare, and timestamp is saved with a unique Trip ID.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features -->
+<div class="bg-gray-50 py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-14">
+            <p class="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-2">Features</p>
+            <h2 class="text-3xl font-bold text-gray-900">Everything you need to stay safe</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="card-hover bg-white rounded-2xl p-6 border border-gray-100">
+                <div class="text-2xl mb-3">✅</div>
+                <h3 class="font-bold text-gray-800 mb-1">Identity Verification</h3>
+                <p class="text-gray-400 text-sm">Every rider is registered with real bike and personal details before getting a code.</p>
+            </div>
+            <div class="card-hover bg-white rounded-2xl p-6 border border-gray-100">
+                <div class="text-2xl mb-3">🔐</div>
+                <h3 class="font-bold text-gray-800 mb-1">QR Code per Rider</h3>
+                <p class="text-gray-400 text-sm">Each rider gets a unique QR code to show passengers for instant verification.</p>
+            </div>
+            <div class="card-hover bg-white rounded-2xl p-6 border border-gray-100">
+                <div class="text-2xl mb-3">📍</div>
+                <h3 class="font-bold text-gray-800 mb-1">Trip Logging</h3>
+                <p class="text-gray-400 text-sm">Every trip is saved with a unique ID, destination, fare, and exact timestamp.</p>
+            </div>
+            <div class="card-hover bg-white rounded-2xl p-6 border border-gray-100">
+                <div class="text-2xl mb-3">🛡️</div>
+                <h3 class="font-bold text-gray-800 mb-1">Accountability</h3>
+                <p class="text-gray-400 text-sm">Trip records can be used to trace incidents and support police investigations.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Who It's For -->
+<div class="bg-white py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-14">
+            <p class="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-2">Who It's For</p>
+            <h2 class="text-3xl font-bold text-gray-900">Built for everyone on the road</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="card-hover rounded-2xl p-6 bg-blue-600 text-white">
+                <div class="text-3xl mb-4">🏍️</div>
+                <h3 class="font-bold text-lg mb-2">Riders</h3>
+                <ul class="text-blue-100 text-sm space-y-2">
+                    <li>→ Verified professional identity</li>
+                    <li>→ Protection from false claims</li>
+                    <li>→ Build passenger trust</li>
+                    <li>→ Full ride history</li>
+                </ul>
+            </div>
+            <div class="card-hover rounded-2xl p-6 bg-green-600 text-white">
+                <div class="text-3xl mb-4">🧍</div>
+                <h3 class="font-bold text-lg mb-2">Passengers</h3>
+                <ul class="text-green-100 text-sm space-y-2">
+                    <li>→ Know who you're riding with</li>
+                    <li>→ Digital trip receipt</li>
+                    <li>→ Easy incident reporting</li>
+                    <li>→ Peace of mind every ride</li>
+                </ul>
+            </div>
+            <div class="card-hover rounded-2xl p-6 bg-purple-600 text-white">
+                <div class="text-3xl mb-4">🚔</div>
+                <h3 class="font-bold text-lg mb-2">Law Enforcement</h3>
+                <ul class="text-purple-100 text-sm space-y-2">
+                    <li>→ Traceable trip records</li>
+                    <li>→ Verified identities</li>
+                    <li>→ Faster investigations</li>
+                    <li>→ Better evidence access</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Banner -->
+<div class="bg-blue-600 py-16 px-6">
+    <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">Ready to ride safer?</h2>
+        <p class="text-blue-100 mb-8">Join SafeRide today. Registration is free and takes less than 2 minutes.</p>
+        {% if current_user.is_authenticated %}
+            <a href="/dashboard" class="bg-white text-blue-600 px-8 py-3.5 rounded-xl font-semibold hover:bg-blue-50 transition text-sm">
+                Go to Dashboard →
+            </a>
+        {% else %}
+            <a href="/signup" class="bg-white text-blue-600 px-8 py-3.5 rounded-xl font-semibold hover:bg-blue-50 transition text-sm">
+                Create Free Account →
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="bg-gray-900 py-8 px-6">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-blue-400 font-bold text-lg">SafeRide</p>
+        <p class="text-gray-500 text-sm">Making informal bike rides safer across Bangladesh.</p>
+        <div class="flex gap-4 text-sm text-gray-500">
+            <a href="/trip" class="hover:text-white transition">Log Trip</a>
+            <a href="/history" class="hover:text-white transition">History</a>
+            {% if not current_user.is_authenticated %}
+            <a href="/signup" class="hover:text-white transition">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Site Stats Bar -->
+<div class="bg-black py-4 px-6">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
+        <p class="text-gray-500 text-xs sm:text-sm">All Rights Reserved © 2026 | <span class="text-orange-400 font-medium">MD. Akil Mahmud</span></p>
+        <span class="hidden sm:inline text-gray-700">|</span>
+        <a href="/changelog" class="text-gray-300 text-xs sm:text-sm hover:text-white transition flex items-center gap-1">
+            What's New? View the 📄 <span class="font-bold">Changelog</span>
+        </a>
+        <span class="hidden sm:inline text-gray-700">|</span>
+        <span class="inline-flex items-center gap-2 bg-gray-800 text-gray-300 text-xs font-medium px-3 py-1 rounded-full">
+            Total Hits
+            <span class="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">{{ "{:,}".format(hits) }}</span>
+        </span>
+    </div>
+</div>
+
+{% endblock %}

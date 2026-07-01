@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex flex-col items-center justify-center px-4 py-12" style="background: var(--bg);">
+
+    <div class="text-center mb-8">
+        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">👋</div>
+        <h2 class="text-3xl font-extrabold mb-1" style="color: var(--text-primary);">Welcome, {{ current_user.first_name }}!</h2>
+        <p class="text-sm" style="color: var(--text-secondary);">How would you like to use SafeRide?</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+        <a href="/register-rider"
+            class="card-hover block border-2 border-blue-100 rounded-2xl p-8 text-center hover:border-blue-400 transition"
+            style="background: var(--card-bg);">
+            <div class="text-5xl mb-4">🏍️</div>
+            <h3 class="font-bold text-lg mb-2" style="color: var(--text-primary);">I'm a Rider</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Register your bike and get a verified rider code</p>
+            <div class="inline-block bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full">Register as Rider →</div>
+        </a>
+        <a href="/register-passenger"
+            class="card-hover block border-2 border-green-100 rounded-2xl p-8 text-center hover:border-green-400 transition"
+            style="background: var(--card-bg);">
+            <div class="text-5xl mb-4">🧍</div>
+            <h3 class="font-bold text-lg mb-2" style="color: var(--text-primary);">I'm a Passenger</h3>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Register and start logging safe verified trips</p>
+            <div class="inline-block bg-green-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full">Register as Passenger →</div>
+        </a>
+    </div>
+
+    <p class="text-sm mt-6" style="color: var(--text-secondary);">You can add both roles later from your dashboard.</p>
+
+</div>
+
+{% endblock %}

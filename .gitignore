@@ -1,0 +1,9 @@
+venv/
+instance/
+static/uploads/
+static/qrcodes/
+__pycache__/
+*.pyc
+.env
+.history/
+Safe-Ride/

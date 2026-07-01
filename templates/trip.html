@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+    <div class="w-full max-w-md animate-fade-up">
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">📋</div>
+            <h2 class="text-3xl font-extrabold mb-1" style="color: var(--text-primary);">Log a Trip</h2>
+            <p class="text-sm" style="color: var(--text-secondary);">Enter the rider code and trip details below</p>
+        </div>
+
+        <div class="page-card">
+            {% if error %}
+            <div class="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-2 mb-4 text-sm">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/trip" method="POST" class="space-y-4" id="tripForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                <!-- Rider Code + QR Scan -->
+                <div>
+                    <div class="flex gap-2">
+                        <input type="text" name="rider_code" id="rider_code" placeholder="Rider Code (e.g. SR-514516)" required class="input-field flex-1"/>
+                        <button type="button" onclick="openScanner()" class="btn-secondary px-3 text-sm whitespace-nowrap">📷 Scan</button>
+                    </div>
+                    <p class="text-xs mt-1" style="color: var(--text-muted);">Ask the rider to show their code or QR.</p>
+                </div>
+
+                <input type="text" name="passenger_name" placeholder="Your Name" required class="input-field"/>
+
+                <div>
+                    <input type="text" name="passenger_phone" id="passenger_phone" placeholder="Your Phone Number (01XXXXXXXXX)" required class="input-field"/>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="phone_error">Please enter a valid 11-digit number.</p>
+                </div>
+
+                <!-- From (pickup location with map) -->
+                <div>
+                    <label class="text-sm mb-1 block" style="color: var(--text-secondary);">From (Pickup Location)</label>
+                    <input type="text" id="search_input" placeholder="Search pickup location..." class="input-field mb-2"/>
+                    <button type="button" onclick="searchOrigin()" class="btn-secondary w-full py-2 text-sm mb-2">Search Location</button>
+                    <div id="map" class="w-full h-48 rounded-xl border" style="border-color: var(--input-border);"></div>
+                    <input type="text" name="origin" id="origin" readonly placeholder="Selected pickup point will appear here..."
+                        class="input-field text-sm mt-2" style="background: var(--bg);"/>
+                    <input type="hidden" name="origin_lat" id="origin_lat"/>
+                    <input type="hidden" name="origin_lng" id="origin_lng"/>
+                </div>
+
+                <input type="text" name="destination" placeholder="Destination" required class="input-field"/>
+
+                <div>
+                    <input type="number" name="fare" id="fare" placeholder="Agreed Fare (BDT)" min="0" step="0.01" required class="input-field"/>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="fare_error">Please enter a valid fare amount.</p>
+                </div>
+
+                <button type="submit" class="btn-primary w-full py-3">Log Trip</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- QR Scanner Modal -->
+<div id="scannerModal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 px-4">
+    <div class="page-card max-w-sm w-full text-center">
+        <h3 class="font-bold text-lg mb-3" style="color: var(--text-primary);">Scan Rider QR Code</h3>
+        <video id="qrVideo" class="w-full rounded-xl mb-3" style="background: #000;"></video>
+        <canvas id="qrCanvas" class="hidden"></canvas>
+        <p class="text-xs mb-3" style="color: var(--text-secondary);">Point the camera at the rider's QR code</p>
+        <button type="button" onclick="closeScanner()" class="btn-secondary w-full py-2">Cancel</button>
+    </div>
+</div>
+
+<script>
+// ── Map for "From" pickup location ──
+const map = L.map('map').setView([23.8103, 90.4125], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+let marker = null;
+
+function placeMarker(lat, lng) {
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([lat, lng]).addTo(map);
+    map.setView([lat, lng], 16);
+}
+
+function setOrigin(lat, lng, label) {
+    document.getElementById('origin_lat').value = lat;
+    document.getElementById('origin_lng').value = lng;
+    document.getElementById('origin').value = label;
+}
+
+map.on('click', function(e) {
+    const { lat, lng } = e.latlng;
+    placeMarker(lat, lng);
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        .then(r => r.json())
+        .then(data => setOrigin(lat, lng, data.display_name));
+});
+
+function searchOrigin() {
+    const query = document.getElementById('search_input').value;
+    if (!query) return;
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.length > 0) {
+                const { lat, lon, display_name } = data[0];
+                placeMarker(parseFloat(lat), parseFloat(lon));
+                setOrigin(parseFloat(lat), parseFloat(lon), display_name);
+            } else {
+                alert('Location not found. Try a different search.');
+            }
+        });
+}
+
+document.getElementById('search_input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); searchOrigin(); }
+});
+
+// ── Phone & Fare validation ──
+document.getElementById('passenger_phone').addEventListener('input', function () {
+    document.getElementById('phone_error').classList.toggle('hidden', /^[0-9]{11}$/.test(this.value) || this.value === '');
+});
+document.getElementById('fare').addEventListener('input', function () {
+    document.getElementById('fare_error').classList.toggle('hidden', parseFloat(this.value) > 0 || this.value === '');
+});
+document.getElementById('tripForm').addEventListener('submit', function(e) {
+    let valid = true;
+    const phone = document.getElementById('passenger_phone').value;
+    const fare = document.getElementById('fare').value;
+    if (!/^[0-9]{11}$/.test(phone)) { document.getElementById('phone_error').classList.remove('hidden'); valid = false; }
+    if (!fare || parseFloat(fare) <= 0) { document.getElementById('fare_error').classList.remove('hidden'); valid = false; }
+    if (!valid) e.preventDefault();
+});
+
+// ── QR Code Live Scanner ──
+let scanStream = null;
+let scanning = false;
+
+function openScanner() {
+    document.getElementById('scannerModal').classList.remove('hidden');
+    const video = document.getElementById('qrVideo');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(stream) {
+            scanStream = stream;
+            video.srcObject = stream;
+            video.setAttribute('playsinline', true);
+            video.play();
+            scanning = true;
+            requestAnimationFrame(tickScan);
+        })
+        .catch(function(err) {
+            alert('Could not access camera: ' + err.message);
+            closeScanner();
+        });
+}
+
+function closeScanner() {
+    scanning = false;
+    document.getElementById('scannerModal').classList.add('hidden');
+    if (scanStream) {
+        scanStream.getTracks().forEach(track => track.stop());
+        scanStream = null;
+    }
+}
+
+function tickScan() {
+    if (!scanning) return;
+    const video = document.getElementById('qrVideo');
+    const canvas = document.getElementById('qrCanvas');
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+            document.getElementById('rider_code').value = code.data;
+            closeScanner();
+            return;
+        }
+    }
+    requestAnimationFrame(tickScan);
+}
+</script>
+
+{% endblock %}

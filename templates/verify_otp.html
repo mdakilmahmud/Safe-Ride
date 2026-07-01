@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+    <div class="w-full max-w-md animate-fade-up">
+        <div class="page-card text-center">
+            <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔐</div>
+            <h2 class="text-2xl font-extrabold mb-1" style="color: var(--text-primary);">Verify Your Account</h2>
+
+            <p class="text-sm mb-1" style="color: var(--text-secondary);">A 6-digit code has been sent to your email:</p>
+            <p class="font-semibold mb-6" style="color: var(--text-primary);">{{ user.email }}</p>
+
+            <form action="/verify-otp" method="POST" class="space-y-4">
+                <input type="text" name="otp" placeholder="Enter 6-digit OTP" maxlength="6" required
+                    class="input-field text-center text-2xl tracking-widest"/>
+                <button type="submit" class="btn-primary w-full py-3">Verify Account</button>
+            </form>
+
+            <a href="/resend-otp" class="block mt-4 text-sm text-blue-600 hover:underline">Resend OTP</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

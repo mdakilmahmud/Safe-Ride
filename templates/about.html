@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto px-6 py-16">
+
+    <div class="text-center mb-14 animate-fade-up">
+        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🛡️</div>
+        <h1 class="text-4xl font-extrabold mb-3" style="color: var(--text-primary);">About SafeRide</h1>
+        <p class="text-lg" style="color: var(--text-secondary);">Why we built this and what we stand for</p>
+    </div>
+
+    <div class="page-card mb-6 animate-fade-up-delay-1">
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text-primary);">The Problem</h2>
+        <p style="color: var(--text-secondary); line-height: 1.8;">
+            In Bangladesh, informal roadside motorcycle rides are one of the fastest and most affordable ways to travel.
+            But they come with a serious safety gap — no identity verification, no trip records, and no accountability
+            if something goes wrong. Passengers don't know who they're riding with, and riders have no protection
+            against false accusations.
+        </p>
+    </div>
+
+    <div class="page-card mb-6 animate-fade-up-delay-2">
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text-primary);">Our Solution</h2>
+        <p style="color: var(--text-secondary); line-height: 1.8;">
+            SafeRide adds a digital safety layer to the existing informal system — without replacing it.
+            Riders register with their real details and receive a unique verified code and QR.
+            Passengers verify the rider before the trip and log a record with destination, fare, and timestamp.
+            Every ride becomes traceable and accountable.
+        </p>
+    </div>
+
+    <div class="page-card mb-6 animate-fade-up-delay-3">
+        <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">Our Values</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="text-center p-4 rounded-xl bg-blue-50">
+                <div class="text-2xl mb-2">🔐</div>
+                <h3 class="font-bold text-sm mb-1" style="color: var(--text-primary);">Safety First</h3>
+                <p class="text-xs" style="color: var(--text-secondary);">Every feature is built around keeping people safe on the road.</p>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-green-50">
+                <div class="text-2xl mb-2">✅</div>
+                <h3 class="font-bold text-sm mb-1" style="color: var(--text-primary);">Trust & Transparency</h3>
+                <p class="text-xs" style="color: var(--text-secondary);">Verified identities and recorded trips build trust between strangers.</p>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-purple-50">
+                <div class="text-2xl mb-2">🌍</div>
+                <h3 class="font-bold text-sm mb-1" style="color: var(--text-primary);">Built for Bangladesh</h3>
+                <p class="text-xs" style="color: var(--text-secondary);">Designed specifically for the real informal transport ecosystem.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-card animate-fade-up-delay-4">
+        <h2 class="text-xl font-bold mb-3" style="color: var(--text-primary);">Built By</h2>
+        <p style="color: var(--text-secondary); line-height: 1.8;">
+            SafeRide is a personal portfolio project built by <strong style="color: var(--text-primary);">MD. Akil Mahmud</strong>,
+            a developer from Bangladesh passionate about building technology that solves real local problems.
+            This project demonstrates full-stack web development using Python, Flask, SQLite, and modern frontend design.
+        </p>
+        <div class="mt-4">
+            {% if not current_user.is_authenticated %}
+            <a href="/signup" class="btn-primary px-6 py-2.5 text-sm">Join SafeRide →</a>
+            {% else %}
+            <a href="/dashboard" class="btn-primary px-6 py-2.5 text-sm">Go to Dashboard →</a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

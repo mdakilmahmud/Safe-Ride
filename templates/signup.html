@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+    <div class="w-full max-w-lg animate-fade-up">
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">👤</div>
+            <h2 class="text-3xl font-extrabold mb-1" style="color: var(--text-primary);">Create Account</h2>
+            <p style="color: var(--text-secondary);" class="text-sm">Join SafeRide and ride safer today</p>
+        </div>
+
+        <div class="page-card">
+            <form action="/signup" method="POST" class="space-y-4" id="signupForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% if error %}
+                <div class="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-2 mb-4 text-sm">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <input type="text" name="first_name" id="first_name" placeholder="First Name" required class="input-field"/>
+                        <p class="text-red-500 text-xs mt-1 hidden" id="first_name_error">Only letters and spaces allowed.</p>
+                    </div>
+                    <div>
+                        <input type="text" name="last_name" id="last_name" placeholder="Last Name" required class="input-field"/>
+                        <p class="text-red-500 text-xs mt-1 hidden" id="last_name_error">Only letters and spaces allowed.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <input type="text" name="email" id="email" placeholder="Email Address" required class="input-field"/>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="email_error">Please enter a valid email address.</p>
+                </div>
+
+                <div>
+                    <input type="text" name="phone" id="phone" placeholder="Phone Number (e.g. 01XXXXXXXXX)" required class="input-field"/>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="phone_error">Please enter a valid 11-digit number.</p>
+                </div>
+
+                <select name="gender" required class="input-field">
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+
+                <div class="relative">
+                    <input type="password" name="password" id="password" placeholder="Password" required class="input-field pr-10"/>
+                    <button type="button" onclick="togglePassword('password','eyeIcon1')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                        <svg id="eyeIcon1" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div>
+                    <div class="relative">
+                        <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required class="input-field pr-10"/>
+                        <button type="button" onclick="togglePassword('confirm_password','eyeIcon2')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                            <svg id="eyeIcon2" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="password_error">Passwords do not match.</p>
+                </div>
+
+                <div>
+                    <label class="text-sm mb-2 block" style="color: var(--text-secondary);">Verify account via:</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="otp_method" value="email" checked class="accent-blue-600"/>
+                            <span class="text-sm" style="color: var(--text-primary);">Email</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="otp_method" value="sms" class="accent-blue-600"/>
+                            <span class="text-sm" style="color: var(--text-primary);">SMS (Phone)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary w-full py-3">Create Account</button>
+            </form>
+
+            <p class="text-center text-sm mt-4" style="color: var(--text-secondary);">
+                Already have an account? <a href="/login" class="text-blue-600 hover:underline font-medium">Log in</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(fieldId, iconId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(iconId);
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21" />`;
+    } else {
+        field.type = 'password';
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+    }
+}
+function validateName(fieldId, errorId) {
+    document.getElementById(fieldId).addEventListener('input', function () {
+        document.getElementById(errorId).classList.toggle('hidden', /^[A-Za-z\s]*$/.test(this.value));
+    });
+}
+validateName('first_name', 'first_name_error');
+validateName('last_name', 'last_name_error');
+document.getElementById('email').addEventListener('input', function () {
+    document.getElementById('email_error').classList.toggle('hidden', /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(this.value) || this.value === '');
+});
+document.getElementById('phone').addEventListener('input', function () {
+    document.getElementById('phone_error').classList.toggle('hidden', /^[0-9]{11}$/.test(this.value) || this.value === '');
+});
+document.getElementById('confirm_password').addEventListener('input', function () {
+    document.getElementById('password_error').classList.toggle('hidden', this.value === document.getElementById('password').value || this.value === '');
+});
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+    let valid = true;
+    if (!/^[A-Za-z\s]+$/.test(document.getElementById('first_name').value)) { document.getElementById('first_name_error').classList.remove('hidden'); valid = false; }
+    if (!/^[A-Za-z\s]+$/.test(document.getElementById('last_name').value)) { document.getElementById('last_name_error').classList.remove('hidden'); valid = false; }
+    if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(document.getElementById('email').value)) { document.getElementById('email_error').classList.remove('hidden'); valid = false; }
+    if (!/^[0-9]{11}$/.test(document.getElementById('phone').value)) { document.getElementById('phone_error').classList.remove('hidden'); valid = false; }
+    if (document.getElementById('password').value !== document.getElementById('confirm_password').value) { document.getElementById('password_error').classList.remove('hidden'); valid = false; }
+    if (!valid) e.preventDefault();
+});
+</script>
+
+{% endblock %}

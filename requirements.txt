@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+flask-login
+flask-bcrypt
+qrcode
+pillow
+email-validator
+gunicorn
+python-dotenv
+flask-limiter
+flask-wtf

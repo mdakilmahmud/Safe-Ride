@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+    <div class="w-full max-w-md animate-fade-up">
+        <div class="page-card text-center">
+            <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">✅</div>
+            <h2 class="text-2xl font-extrabold mb-1" style="color: var(--text-primary);">Trip Logged!</h2>
+            <p class="text-sm mb-6" style="color: var(--text-secondary);">Your trip record has been saved securely.</p>
+
+            <div class="rounded-xl p-4 border text-left space-y-3 mb-6" style="background: var(--bg); border-color: var(--card-border);">
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Trip ID</span>
+                    <span class="font-bold text-blue-600">{{ trip.trip_code }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Rider</span>
+                    <span class="font-medium" style="color: var(--text-primary);">{{ trip.rider.user.first_name }} {{ trip.rider.user.last_name }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Rider Code</span>
+                    <span class="font-medium" style="color: var(--text-primary);">{{ trip.rider.rider_code }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Passenger</span>
+                    <span class="font-medium" style="color: var(--text-primary);">{{ trip.passenger_name }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Destination</span>
+                    <span class="font-medium" style="color: var(--text-primary);">{{ trip.destination }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Fare</span>
+                    <span class="font-medium" style="color: var(--text-primary);">৳{{ trip.fare }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span style="color: var(--text-secondary);">Time</span>
+                    <span class="font-medium" style="color: var(--text-primary);">{{ trip.timestamp.strftime('%d %b %Y, %I:%M %p') }}</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <a href="/trip" class="btn-primary w-full py-2.5">Log Another Trip</a>
+                <a href="/" class="btn-secondary w-full py-2.5">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

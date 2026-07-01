@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Profile Header -->
+    <div class="animate-fade-up page-card mb-6 flex items-center gap-6">
+        <div class="relative flex-shrink-0">
+            {% if user.profile_photo %}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_photo) }}"
+                    class="w-20 h-20 rounded-2xl object-cover border-4 border-blue-50"/>
+            {% else %}
+                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-2xl font-bold text-white">
+                    {{ user.first_name[0] }}{{ user.last_name[0] }}
+                </div>
+            {% endif %}
+            <label for="photoInput" class="absolute -bottom-1 -right-1 bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer text-xs hover:bg-blue-700 shadow">✏️</label>
+        </div>
+        <div class="flex-1">
+            <h2 class="text-2xl font-extrabold" style="color: var(--text-primary);">{{ user.first_name }} {{ user.last_name }}</h2>
+            <p class="text-sm mt-0.5" style="color: var(--text-secondary);">{{ user.email }}</p>
+            <div class="flex gap-2 mt-2 flex-wrap">
+                <span class="px-3 py-0.5 rounded-full text-xs font-semibold
+                    {% if user.role == 'rider' %} bg-blue-100 text-blue-700
+                    {% elif user.role == 'passenger' %} bg-green-100 text-green-700
+                    {% elif user.role == 'both' %} bg-purple-100 text-purple-700
+                    {% else %} bg-gray-100 text-gray-500 {% endif %}">
+                    {{ user.role | capitalize }}
+                </span>
+                <span class="px-3 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-600">● Active</span>
+            </div>
+        </div>
+        <form action="/upload-photo" method="POST" enctype="multipart/form-data" id="photoForm" class="hidden">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="file" id="photoInput" name="photo" accept="image/*" onchange="document.getElementById('photoForm').submit()"/>
+        </form>
+    </div>
+
+    <!-- Personal Info -->
+    <div class="animate-fade-up-delay-1 page-card mb-6">
+        <h3 class="font-bold text-lg mb-4" style="color: var(--text-primary);">Personal Information</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">First Name</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.first_name }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Last Name</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.last_name }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Phone</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.phone }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Gender</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.gender or '—' }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Member Since</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.registered_at.strftime('%d %b %Y') }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Account Status</p>
+                <p class="font-semibold text-green-600">Active</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rider Profile -->
+    {% if user.role in ['rider', 'both'] and user.rider_profile %}
+    <div class="animate-fade-up-delay-2 page-card mb-6">
+        <h3 class="font-bold text-lg mb-4" style="color: var(--text-primary);">🏍️ Rider Profile</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Home Address</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.passenger_profile.address or '—' }}</p>
+            </div>
+            <div class="pl-2">
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Passenger Code</p>
+                <p class="font-bold text-green-600 text-xl tracking-widest">{{ user.passenger_profile.passenger_code }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Rider Code</p>
+                <p class="font-bold text-blue-600 text-xl tracking-widest">{{ user.rider_profile.rider_code }}</p>
+            </div>
+        </div>
+
+        <div class="flex justify-center mb-4">
+            <div class="rounded-2xl p-3 border" style="background: var(--bg); border-color: var(--card-border);">
+                <img src="{{ url_for('static', filename='qrcodes/' + user.rider_profile.rider_code + '.png') }}"
+                    class="w-32 h-32"/>
+                <p class="text-center text-xs mt-2" style="color: var(--text-secondary);">Show this to passengers</p>
+            </div>
+        </div>
+
+        {% if user.rider_profile.trips %}
+        <h4 class="font-semibold mb-3" style="color: var(--text-primary);">Ride History</h4>
+        {% for trip in user.rider_profile.trips %}
+        <div class="rounded-xl p-3 mb-2 flex justify-between items-center text-sm" style="background: var(--bg);">
+            <div>
+                <span class="font-bold text-blue-600 text-xs">{{ trip.trip_code }}</span>
+                <p class="mt-0.5" style="color: var(--text-primary);">To: {{ trip.destination }} · ৳{{ trip.fare }}</p>
+            </div>
+            <span class="text-xs" style="color: var(--text-secondary);">{{ trip.timestamp.strftime('%d %b %Y') }}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-sm text-center py-4" style="color: var(--text-secondary);">No rides yet.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Passenger Profile -->
+    {% if user.role in ['passenger', 'both'] and user.passenger_profile %}
+    <div class="animate-fade-up-delay-2 page-card mb-6">
+        <h3 class="font-bold text-lg mb-4" style="color: var(--text-primary);">🧍 Passenger Profile</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Home Address</p>
+                <p class="font-semibold" style="color: var(--text-primary);">{{ user.passenger_profile.address or '—' }}</p>
+            </div>
+            <div>
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Passenger Code</p>
+                <p class="font-bold text-green-600 text-xl tracking-widest">{{ user.passenger_profile.passenger_code }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Add Role -->
+    <div class="animate-fade-up-delay-3 page-card">
+        <h3 class="font-bold text-lg mb-4" style="color: var(--text-primary);">Add a Role</h3>
+        {% if user.role == 'both' %}
+            <p class="text-sm" style="color: var(--text-secondary);">You have both Rider and Passenger roles active.</p>
+        {% else %}
+        <div class="flex gap-3 flex-wrap">
+            {% if user.role not in ['rider', 'both'] %}
+            <a href="/register-rider" class="btn-primary px-5 py-2.5 text-sm">🏍️ Become a Rider</a>
+            {% endif %}
+            {% if user.role not in ['passenger', 'both'] %}
+            <a href="/register-passenger" class="btn-green px-5 py-2.5 text-sm">🧍 Become a Passenger</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

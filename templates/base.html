@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ── Theme Variables ── */
+        [data-theme="light"] {
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --card-border: #f3f4f6;
+            --card-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --input-bg: #fafafa;
+            --input-border: #e5e7eb;
+            --nav-bg: #ffffff;
+            --nav-link: #6b7280;
+            --nav-link-hover-bg: rgba(0,0,0,0.05);
+            --nav-logo-accent: #2563eb;
+            --nav-logo-main: #111827;
+            --nav-btn-login-border: rgba(0,0,0,0.15);
+            --nav-btn-login-color: #374151;
+            --nav-btn-signup-bg: #2563eb;
+            --nav-btn-signup-color: #ffffff;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --card-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --input-bg: #0f172a;
+            --input-border: #334155;
+            --nav-bg: #0f172a;
+            --nav-link: #94a3b8;
+            --nav-link-hover-bg: rgba(255,255,255,0.07);
+            --nav-logo-accent: #60a5fa;
+            --nav-logo-main: #f1f5f9;
+            --nav-btn-login-border: rgba(255,255,255,0.15);
+            --nav-btn-login-color: #94a3b8;
+            --nav-btn-signup-bg: #2563eb;
+            --nav-btn-signup-color: #ffffff;
+        }
+
+        /* ── Base ── */
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-up { animation: fadeUp 0.6s ease forwards; }
+        .animate-fade-up-delay-1 { animation: fadeUp 0.6s ease 0.15s forwards; opacity: 0; }
+        .animate-fade-up-delay-2 { animation: fadeUp 0.6s ease 0.3s forwards; opacity: 0; }
+        .animate-fade-up-delay-3 { animation: fadeUp 0.6s ease 0.45s forwards; opacity: 0; }
+        .animate-fade-up-delay-4 { animation: fadeUp 0.6s ease 0.6s forwards; opacity: 0; }
+        .animate-fade-in { animation: fadeIn 0.6s ease forwards; }
+
+        /* ── Cards ── */
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+        .page-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--card-border);
+            padding: 32px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        /* ── Inputs ── */
+        .input-field {
+            width: 100%;
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+            background: var(--card-bg);
+        }
+        .input-field::placeholder { color: var(--text-muted); }
+        select.input-field { color: var(--text-primary); }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-primary:hover { background: #1d4ed8; box-shadow: 0 0 16px rgba(37,99,235,0.35); transform: translateY(-1px); }
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid var(--input-border);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-secondary:hover { background: var(--bg); transform: translateY(-1px); }
+        .btn-green {
+            background: #16a34a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-green:hover { background: #15803d; box-shadow: 0 0 16px rgba(22,163,74,0.35); transform: translateY(-1px); }
+        .gradient-text {
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: var(--nav-bg);
+            border-radius: 999px;
+            position: sticky;
+            top: 16px;
+            z-index: 50;
+            padding: 0 20px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 16px 24px 0 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .nav-logo {
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+        .nav-logo span:first-child { color: var(--nav-logo-accent); }
+        .nav-logo span:last-child { color: var(--nav-logo-main); }
+        .nav-links { display: flex; align-items: center; gap: 2px; }
+        .nav-link {
+            color: var(--nav-link);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 999px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .nav-link:hover { color: var(--text-primary); background: var(--nav-link-hover-bg); }
+        .nav-btn-login {
+            color: var(--nav-btn-login-color);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 6px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--nav-btn-login-border);
+            background: transparent;
+            transition: all 0.2s;
+        }
+        .nav-btn-login:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+        .nav-btn-signup {
+            color: var(--nav-btn-signup-color);
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 6px 18px;
+            border-radius: 999px;
+            background: var(--nav-btn-signup-bg);
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .nav-btn-signup:hover { opacity: 0.9; transform: translateY(-1px); }
+        .nav-btn-logout {
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: white;
+            transition: all 0.2s;
+        }
+        .nav-btn-logout:hover { background: #dc2626; }
+
+        /* ── Theme Toggle ── */
+        .theme-toggle {
+            background: rgba(128,128,128,0.15);
+            border: 1px solid rgba(128,128,128,0.2);
+            border-radius: 999px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--nav-link);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            line-height: 1;
+        }
+        .theme-toggle:hover { background: rgba(128,128,128,0.25); }
+
+        /* ── Dark mode overrides ── */
+        [data-theme="dark"] .text-gray-900 { color: #f1f5f9 !important; }
+        [data-theme="dark"] .text-gray-800 { color: #e2e8f0 !important; }
+        [data-theme="dark"] .text-gray-700 { color: #cbd5e1 !important; }
+        [data-theme="dark"] .text-gray-600 { color: #94a3b8 !important; }
+        [data-theme="dark"] .text-gray-500 { color: #64748b !important; }
+        [data-theme="dark"] .text-gray-400 { color: #475569 !important; }
+        [data-theme="dark"] .bg-white { background: #1e293b !important; }
+        [data-theme="dark"] .bg-gray-50 { background: #0f172a !important; }
+        [data-theme="dark"] .bg-gray-100 { background: #1e293b !important; }
+        [data-theme="dark"] .border-gray-100 { border-color: #334155 !important; }
+        [data-theme="dark"] .border-gray-200 { border-color: #334155 !important; }
+        [data-theme="dark"] .bg-blue-50 { background: rgba(37,99,235,0.15) !important; }
+        [data-theme="dark"] .bg-green-50 { background: rgba(22,163,74,0.15) !important; }
+        [data-theme="dark"] .bg-purple-50 { background: rgba(124,58,237,0.15) !important; }
+        [data-theme="dark"] .bg-yellow-50 { background: rgba(202,138,4,0.15) !important; }
+        [data-theme="dark"] .border-yellow-200 { border-color: rgba(202,138,4,0.3) !important; }
+        [data-theme="dark"] .text-yellow-800 { color: #fbbf24 !important; }
+        [data-theme="dark"] .text-yellow-500 { color: #f59e0b !important; }
+        [data-theme="dark"] .hero-bg { background: radial-gradient(ellipse at top left, #0f172a 0%, #1e293b 60%, #0f172a 100%) !important; }
+        [data-theme="dark"] .stat-card { background: #1e293b !important; border-color: #334155 !important; }
+    </style>
+</head>
+<body class="min-h-screen" style="background: var(--bg); color: var(--text-primary);">
+
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            <span>Safe</span><span>Ride</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/about" class="nav-link">About</a>
+            {% if current_user.is_authenticated %}
+                <a href="/trip" class="nav-link">Log Trip</a>
+                <a href="/history" class="nav-link">History</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/logout" class="nav-btn-logout">Logout</a>
+            {% else %}
+                <a href="/login" class="nav-btn-login">Login</a>
+                <a href="/signup" class="nav-btn-signup">Sign Up</a>
+            {% endif %}
+            <button class="theme-toggle ml-2" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        </div>
+    </nav>
+
+    <div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="max-w-lg mx-auto mt-4 px-4">
+                    {% for category, message in messages %}
+                    <div class="rounded-lg px-4 py-2 mb-2 text-sm
+                        {% if category == 'error' %} bg-red-50 border border-red-200 text-red-600
+                        {% else %} bg-green-50 border border-green-200 text-green-600 {% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+
+<script>
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+</script>
+
+</body>
+</html>

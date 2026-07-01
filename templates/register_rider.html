@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+    <div class="w-full max-w-lg animate-fade-up">
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">🏍️</div>
+            <h2 class="text-3xl font-extrabold mb-1" style="color: var(--text-primary);">Rider Registration</h2>
+            <p class="text-sm" style="color: var(--text-secondary);">Welcome, {{ current_user.first_name }}. Just add your bike details.</p>
+        </div>
+
+        <div class="page-card">
+            <form action="/register-rider" method="POST" class="space-y-4" id="riderForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% if error %}
+                <div class="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-2 mb-4 text-sm">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <select name="bike_brand" id="bike_brand" required class="input-field">
+                    <option value="" disabled selected>Select Bike Brand</option>
+                    <option>Honda</option><option>Yamaha</option><option>Suzuki</option>
+                    <option>TVS</option><option>Bajaj</option><option>Hero</option>
+                    <option>Kawasaki</option><option>KTM</option><option>Lifan</option>
+                    <option>Runner</option><option>Walton</option><option>Keeway</option>
+                    <option>Benelli</option><option>Royal Enfield</option><option>GPX</option>
+                    <option>Haojue</option><option>Zontes</option><option>CFMOTO</option>
+                    <option>Ducati</option><option>Aprilia</option><option>Vespa</option>
+                    <option>Piaggio</option><option>H Power</option><option>Speeder</option>
+                    <option>Roadmaster</option><option>Regal Raptor</option><option>Dayun</option>
+                </select>
+
+                <select name="bike_model" id="bike_model" required class="input-field">
+                    <option value="" disabled selected>Select Bike Model</option>
+                </select>
+
+                <div>
+                    <label class="text-sm mb-1 block" style="color: var(--text-secondary);">Vehicle Registration Plate</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select name="plate_area" id="plate_area" required class="input-field text-sm">
+                            <option value="" disabled selected>Area</option>
+                            <option value="ঢাকা মেট্রো">ঢাকা মেট্রো</option>
+                            <option value="চট্ট মেট্রো">চট্ট মেট্রো</option>
+                            <option value="খুলনা মেট্রো">খুলনা মেট্রো</option>
+                            <option value="রাজশাহী মেট্রো">রাজশাহী মেট্রো</option>
+                            <option value="সিলেট মেট্রো">সিলেট মেট্রো</option>
+                            <option value="বরিশাল মেট্রো">বরিশাল মেট্রো</option>
+                            <option value="রংপুর মেট্রো">রংপুর মেট্রো</option>
+                            <option value="গাজীপুর মেট্রো">গাজীপুর মেট্রো</option>
+                        </select>
+                        <select name="plate_category" id="plate_category" required class="input-field text-sm">
+                            <option value="" disabled selected>Category</option>
+                            <option value="হ">হ (50cc–125cc)</option>
+                            <option value="ল">ল (135cc+)</option>
+                        </select>
+                        <input type="text" name="plate_number" id="plate_number" placeholder="XX-XXXX" maxlength="7" required class="input-field text-sm"/>
+                    </div>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="plate_error">Please enter a valid format: XX-XXXX</p>
+                </div>
+
+                <button type="submit" class="btn-primary w-full py-3">Complete Rider Registration</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const bikeModels = {
+    Honda: ["Honda Hornet 2.0","Honda CB Shine SP","Honda Livo","Honda XBlade","Honda CB150X","Honda CBR150R","Honda Dio","Honda Grazia","Honda CB125F"],
+    Yamaha: ["Yamaha FZS V3","Yamaha FZ V3","Yamaha R15 V4","Yamaha MT-15","Yamaha Saluto RX","Yamaha Ray ZR","Yamaha Fascino"],
+    Suzuki: ["Suzuki Gixxer SF","Suzuki Gixxer","Suzuki Hayabusa","Suzuki GSX-R150","Suzuki Intruder","Suzuki Access 125"],
+    TVS: ["TVS Apache RTR 160 4V","TVS Apache RTR 200 4V","TVS Raider 125","TVS Ntorq 125","TVS Star City+","TVS Sport"],
+    Bajaj: ["Bajaj Pulsar NS160","Bajaj Pulsar NS200","Bajaj Pulsar 150","Bajaj Dominar 400","Bajaj CT100","Bajaj Avenger 220"],
+    Hero: ["Hero Hunk","Hero Xtreme 160R","Hero Glamour","Hero Splendor+","Hero Passion Pro","Hero HF Deluxe"],
+    Kawasaki: ["Kawasaki Ninja 300","Kawasaki Ninja 400","Kawasaki Z125","Kawasaki Versys 650","Kawasaki Z650"],
+    KTM: ["KTM Duke 125","KTM Duke 200","KTM Duke 390","KTM RC 200","KTM RC 390"],
+    Lifan: ["Lifan KP150","Lifan KPR150","Lifan KPT200","Lifan KP Mini"],
+    Runner: ["Runner Turbo 150","Runner Knight 100","Runner Kite 100","Runner Cheeta"],
+    Walton: ["Walton Fusion 110","Walton Xplore 125","Walton RX7"],
+    Keeway: ["Keeway RKR 150","Keeway Superlight 202","Keeway K-Light 250"],
+    Benelli: ["Benelli TNT 150i","Benelli Leoncino 250","Benelli TRK 502","Benelli 302R"],
+    "Royal Enfield": ["Royal Enfield Classic 350","Royal Enfield Meteor 350","Royal Enfield Hunter 350","Royal Enfield Thunderbird 350"],
+    GPX: ["GPX Demon 150GR","GPX Demon 150FK","GPX Legend 150S"],
+    Haojue: ["Haojue DR160S","Haojue UD125","Haojue TR150"],
+    Zontes: ["Zontes 310R","Zontes 310T","Zontes 155U"],
+    CFMOTO: ["CFMOTO 300NK","CFMOTO 650MT","CFMOTO 450SS"],
+    Ducati: ["Ducati Monster","Ducati Panigale V2","Ducati Scrambler"],
+    Aprilia: ["Aprilia RS 150","Aprilia Storm 125","Aprilia SR 160"],
+    Vespa: ["Vespa SXL 150","Vespa VXL 150","Vespa Primavera"],
+    Piaggio: ["Piaggio Medley 150","Piaggio Liberty 125"],
+    "H Power": ["H Power Hunter 150","H Power Fighter 150"],
+    Speeder: ["Speeder Velocity 150","Speeder Turbo 100"],
+    Roadmaster: ["Roadmaster Classic 150","Roadmaster Passion 100"],
+    "Regal Raptor": ["Regal Raptor Cruiser 250","Regal Raptor DD350E"],
+    Dayun: ["Dayun DY150","Dayun Turbine 125"]
+};
+
+document.getElementById('bike_brand').addEventListener('change', function () {
+    const modelSelect = document.getElementById('bike_model');
+    modelSelect.innerHTML = '<option value="" disabled selected>Select Bike Model</option>';
+    (bikeModels[this.value] || []).forEach(model => {
+        const opt = document.createElement('option');
+        opt.value = model;
+        opt.textContent = model;
+        modelSelect.appendChild(opt);
+    });
+});
+
+document.getElementById('plate_number').addEventListener('input', function () {
+    let val = this.value.replace(/[^0-9]/g, '');
+    if (val.length > 2) val = val.slice(0, 2) + '-' + val.slice(2, 6);
+    this.value = val;
+    document.getElementById('plate_error').classList.toggle('hidden', /^\d{2}-\d{4}$/.test(this.value) || this.value === '');
+});
+
+document.getElementById('riderForm').addEventListener('submit', function (e) {
+    if (!/^\d{2}-\d{4}$/.test(document.getElementById('plate_number').value)) {
+        document.getElementById('plate_error').classList.remove('hidden');
+        e.preventDefault();
+    }
+});
+</script>
+
+{% endblock %}

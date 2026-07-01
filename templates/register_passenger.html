@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+    <div class="w-full max-w-md animate-fade-up">
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">🧍</div>
+            <h2 class="text-3xl font-extrabold mb-1" style="color: var(--text-primary);">Passenger Registration</h2>
+            <p class="text-sm" style="color: var(--text-secondary);">Welcome, {{ current_user.first_name }}. Just add your address.</p>
+        </div>
+
+        <div class="page-card">
+            <form action="/register-passenger" method="POST" class="space-y-4" id="passengerForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% if error %}
+                <div class="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-2 mb-4 text-sm">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <div>
+                    <input type="text" id="search_input" placeholder="Search your address..." class="input-field"/>
+                    <p class="text-xs mt-1" style="color: var(--text-muted);">Search or click on the map to select your home location.</p>
+                </div>
+
+                <button type="button" onclick="searchAddress()" class="btn-green w-full py-2.5 text-sm">Search Address</button>
+
+                <div id="map" class="w-full h-52 rounded-xl border" style="border-color: var(--input-border);"></div>
+
+                <div>
+                    <input type="text" name="address" id="address" readonly
+                        placeholder="Selected address will appear here..."
+                        class="input-field text-sm" style="background: var(--bg);"/>
+                    <p class="text-red-500 text-xs mt-1 hidden" id="address_error">Please select a location on the map.</p>
+                </div>
+                <input type="hidden" name="latitude" id="latitude"/>
+                <input type="hidden" name="longitude" id="longitude"/>
+
+                <button type="submit" class="btn-primary w-full py-3">Complete Passenger Registration</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const map = L.map('map').setView([23.8103, 90.4125], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+let marker = null;
+
+function placeMarker(lat, lng) {
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([lat, lng]).addTo(map);
+    map.setView([lat, lng], 16);
+}
+
+function setAddress(lat, lng, label) {
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    document.getElementById('address').value = label;
+    document.getElementById('address_error').classList.add('hidden');
+}
+
+map.on('click', function(e) {
+    const { lat, lng } = e.latlng;
+    placeMarker(lat, lng);
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        .then(r => r.json())
+        .then(data => setAddress(lat, lng, data.display_name));
+});
+
+function searchAddress() {
+    const query = document.getElementById('search_input').value;
+    if (!query) return;
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.length > 0) {
+                const { lat, lon, display_name } = data[0];
+                placeMarker(parseFloat(lat), parseFloat(lon));
+                setAddress(parseFloat(lat), parseFloat(lon), display_name);
+            } else {
+                alert('Address not found. Try a different search.');
+            }
+        });
+}
+
+document.getElementById('search_input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); searchAddress(); }
+});
+
+document.getElementById('passengerForm').addEventListener('submit', function(e) {
+    if (!document.getElementById('address').value) {
+        document.getElementById('address_error').classList.remove('hidden');
+        e.preventDefault();
+    }
+});
+</script>
+
+{% endblock %}
