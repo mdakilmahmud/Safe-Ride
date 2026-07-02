@@ -6,25 +6,18 @@ from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime
-import resend
 import random
 import string
 import qrcode
 import os
-import smtplib
-from email.mime.text import MIMEText
-# smtplib kept as fallback, primary sending now via Resend API
 from email_validator import validate_email, EmailNotValidError
 from dotenv import load_dotenv
 
 load_dotenv()
 
-GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS')
-GMAIL_APP_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
-resend.api_key = RESEND_API_KEY
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///saferide.db')
@@ -137,29 +130,6 @@ def generate_otp():
     plain = ''.join(random.choices(string.digits, k=6))
     hashed = bcrypt.generate_password_hash(plain).decode('utf-8')
     return plain, hashed
-
-def send_otp_email(to_email, otp_code, first_name):
-    import threading
-    def _send():
-        try:
-            resend.Emails.send({
-                "from": "SafeRide <onboarding@resend.dev>",
-                "to": to_email,
-                "subject": "Your SafeRide Verification Code",
-                "text": f"""Hi {first_name},
-
-Your SafeRide verification code is: {otp_code}
-
-This code expires in 10 minutes. If you didn't request this, you can ignore this email.
-
-— SafeRide Team"""
-            })
-        except Exception as e:
-            print(f'Email send failed: {e}')
-    thread = threading.Thread(target=_send)
-    thread.daemon = True
-    thread.start()
-    return True
 
 def generate_qr_code(rider_code):
     qr = qrcode.make(rider_code)
@@ -286,11 +256,7 @@ def signup():
 
         session['pending_user_id'] = user.id
         session['otp_method'] = request.form.get('otp_method', 'email')
-
-        email_sent = send_otp_email(email, otp_plain, first_name)
-        if not email_sent:
-            flash('Could not send verification email. Please check your email address and try again.', 'error')
-
+        session['demo_otp'] = otp_plain
         return redirect(url_for('verify_otp'))
 
     return render_template('signup.html')
@@ -325,12 +291,14 @@ def verify_otp():
             db.session.commit()
             session.pop('pending_user_id', None)
             session.pop('otp_method', None)
+            session.pop('demo_otp', None)
             login_user(user)
             return redirect(url_for('choose_role'))
         else:
             flash('Invalid OTP. Please try again.', 'error')
 
-    return render_template('verify_otp.html', user=user, otp_method=otp_method)
+    demo_otp = session.get('demo_otp', '')
+    return render_template('verify_otp.html', user=user, otp_method=otp_method, demo_otp=demo_otp)
 
 @app.route('/resend-otp')
 @limiter.limit("100 per hour")
@@ -344,11 +312,8 @@ def resend_otp():
         user.otp_code = otp_hashed
         user.otp_created_at = datetime.utcnow()
         db.session.commit()
-        email_sent = send_otp_email(user.email, otp_plain, user.first_name)
-        if email_sent:
-            flash('A new OTP has been sent to your email.', 'success')
-        else:
-            flash('Could not resend the email. Please try again.', 'error')
+        session['demo_otp'] = otp_plain
+        flash('A new OTP has been generated.', 'success')
     return redirect(url_for('verify_otp'))
 
 # ── Login ──
