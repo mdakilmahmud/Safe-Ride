@@ -23,6 +23,7 @@
             {% endif %}
 
             <form action="/verify-otp" method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="text" name="otp" placeholder="Enter 6-digit OTP" maxlength="6" required
                     class="input-field text-center text-2xl tracking-widest"/>
                 <button type="submit" class="btn-primary w-full py-3">Verify Account</button>
