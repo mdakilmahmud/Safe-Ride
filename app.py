@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-me'
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
 
 
@@ -153,7 +153,7 @@ def save_profile_photo(file, user_id):
 
 def is_valid_email(email):
     try:
-        validate_email(email, check_deliverability=True)
+        validate_email(email, check_deliverability=False)
         return True
     except EmailNotValidError:
         return False
@@ -167,6 +167,14 @@ def is_strong_password(password):
     has_letter = any(c.isalpha() for c in password)
     has_digit = any(c.isdigit() for c in password)
     return has_letter and has_digit
+
+def parse_optional_float(value):
+    if value in (None, ''):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 def get_or_create_stats():
     stats = SiteStats.query.first()
@@ -208,8 +216,17 @@ def changelog():
 @limiter.limit("200 per hour")
 def signup():
     if request.method == 'POST':
-        email = request.form['email'].strip()
-        phone = request.form['phone'].strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        gender = request.form.get('gender', '').strip()
+
+        if not all([first_name, last_name, email, phone, gender, password, confirm_password]):
+            flash('Please fill in all required fields.', 'error')
+            return redirect(url_for('signup'))
 
         if not is_valid_email(email):
             flash('Please enter a valid email address.', 'error')
@@ -227,25 +244,24 @@ def signup():
             flash('This phone number is already registered.', 'error')
             return redirect(url_for('signup'))
 
-        if not is_strong_password(request.form['password']):
+        if not is_strong_password(password):
             flash('Password must be at least 8 characters and include both letters and numbers.', 'error')
             return redirect(url_for('signup'))
 
-        if request.form['password'] != request.form['confirm_password']:
+        if password != confirm_password:
             flash('Passwords do not match.', 'error')
             return redirect(url_for('signup'))
         
-        hashed_pw = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
         otp_plain, otp_hashed = generate_otp()
-        first_name = request.form['first_name'].strip()
 
         user = User(
             email=email,
             password=hashed_pw,
             first_name=first_name,
-            last_name=request.form['last_name'].strip(),
+            last_name=last_name,
             phone=phone,
-            gender=request.form['gender'],
+            gender=gender,
             role='none',
             is_verified=False,
             otp_code=otp_hashed,
@@ -277,7 +293,11 @@ def verify_otp():
     otp_method = session.get('otp_method', 'email')
 
     if request.method == 'POST':
-        entered_otp = request.form['otp'].strip()
+        entered_otp = request.form.get('otp', '').strip()
+        if not entered_otp:
+            flash('Please enter your OTP.', 'error')
+            return render_template('verify_otp.html', user=user, otp_method=otp_method, demo_otp=session.get('demo_otp', ''))
+
         otp_expired = (
             user.otp_created_at is None or
             (datetime.utcnow() - user.otp_created_at).total_seconds() > 600
@@ -322,8 +342,8 @@ def resend_otp():
 @limiter.limit("300 per hour")
 def login():
     if request.method == 'POST':
-        identifier = request.form['identifier'].strip()
-        password = request.form['password']
+        identifier = request.form.get('identifier', '').strip()
+        password = request.form.get('password', '')
 
         if is_valid_email(identifier):
             user = User.query.filter_by(email=identifier).first()
@@ -367,14 +387,24 @@ def register_rider():
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
+        bike_brand = request.form.get('bike_brand', '').strip()
+        bike_model = request.form.get('bike_model', '').strip()
+        plate_area = request.form.get('plate_area', '').strip()
+        plate_category = request.form.get('plate_category', '').strip()
+        plate_number = request.form.get('plate_number', '').strip()
+
+        if not all([bike_brand, bike_model, plate_area, plate_category, plate_number]):
+            flash('Please fill in all rider registration fields.', 'error')
+            return redirect(url_for('register_rider'))
+
         rider_code = generate_rider_code()
         profile = RiderProfile(
             user_id=current_user.id,
-            bike_brand=request.form['bike_brand'],
-            bike_model=request.form['bike_model'],
-            plate_area=request.form['plate_area'],
-            plate_category=request.form['plate_category'],
-            plate_number=request.form['plate_number'],
+            bike_brand=bike_brand,
+            bike_model=bike_model,
+            plate_area=plate_area,
+            plate_category=plate_category,
+            plate_number=plate_number,
             rider_code=rider_code
         )
         db.session.add(profile)
@@ -397,11 +427,19 @@ def register_passenger():
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
+        address = request.form.get('address', '').strip()
+        latitude = parse_optional_float(request.form.get('latitude'))
+        longitude = parse_optional_float(request.form.get('longitude'))
+
+        if not address or latitude is None or longitude is None:
+            flash('Please select a valid location on the map.', 'error')
+            return redirect(url_for('register_passenger'))
+
         profile = PassengerProfile(
             user_id=current_user.id,
-            address=request.form.get('address'),
-            latitude=request.form.get('latitude') or None,
-            longitude=request.form.get('longitude') or None,
+            address=address,
+            latitude=latitude,
+            longitude=longitude,
             passenger_code=generate_passenger_code()
         )
         db.session.add(profile)
@@ -442,26 +480,46 @@ def upload_photo():
 @limiter.limit("20 per hour")
 def log_trip():
     if request.method == 'POST':
-        rider_code = request.form['rider_code'].strip()
+        rider_code = request.form.get('rider_code', '').strip()
+        passenger_name = request.form.get('passenger_name', '').strip()
+        passenger_phone = request.form.get('passenger_phone', '').strip()
+        destination = request.form.get('destination', '').strip()
+        origin = request.form.get('origin', '').strip()
+        origin_lat = parse_optional_float(request.form.get('origin_lat'))
+        origin_lng = parse_optional_float(request.form.get('origin_lng'))
+
+        if not rider_code:
+            return render_template('trip.html', error='Please enter a rider code.')
+
         rider = RiderProfile.query.filter_by(rider_code=rider_code).first()
         if not rider:
             return render_template('trip.html', error='Rider code not found. Please check and try again.')
         if rider.user_id == current_user.id:
             return render_template('trip.html', error='You cannot log a trip using your own rider code.')
+
+        if not passenger_name:
+            return render_template('trip.html', error='Please enter your name.')
+        if not is_valid_phone(passenger_phone):
+            return render_template('trip.html', error='Please enter a valid 11-digit Bangladeshi mobile number.')
+        if not destination:
+            return render_template('trip.html', error='Please enter your destination.')
+
         try:
-            fare = float(request.form['fare'])
+            fare = float(request.form.get('fare', ''))
         except (ValueError, TypeError):
             return render_template('trip.html', error='Please enter a valid fare amount.')
+        if fare <= 0:
+            return render_template('trip.html', error='Please enter a fare greater than 0.')
 
         new_trip = Trip(
             trip_code=generate_trip_code(),
             rider_id=rider.id,
-            passenger_name=request.form['passenger_name'],
-            passenger_phone=request.form['passenger_phone'],
-            origin=request.form.get('origin'),
-            origin_lat=request.form.get('origin_lat') or None,
-            origin_lng=request.form.get('origin_lng') or None,
-            destination=request.form['destination'],
+            passenger_name=passenger_name,
+            passenger_phone=passenger_phone,
+            origin=origin or None,
+            origin_lat=origin_lat,
+            origin_lng=origin_lng,
+            destination=destination,
             fare=fare
         )
         db.session.add(new_trip)
